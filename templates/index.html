@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" sizes="32x32" type="image/png">
+    <title>Task List</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">    <!-- Custom CSS -->
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <meta http-equiv="refresh" content="900">  <!-- forces refresh every fifteen minutes -->
+
+</head>
+  <body>
+
+  <div class="container-fluid">
+  <table class="table">
+  <thead>
+  <tr>
+    <th scope="col">Task name</th>
+    <th scope="col">Date started</th>
+    <th scope="col">Hours spent</th>
+    <th scope="col">Start/end</th>
+    <th scope="col">Complete</th>
+  </tr>
+  </thead>
+
+  <tbody>
+    {% for i in all_tasks %}
+    <tr>
+      <td> {{ i.name }} </td>
+      <td> {{ i.date_start }}</td>
+      <td> {{ '%0.1f' | format(i.hours_spent|float) }}</td>
+      {% if i.active == False %}
+        <td><a class="btn btn-primary buttons" href="/start/{{ i.id }}">Start</a></td>
+      {% else %}
+        <td><a class="btn btn-primary buttons" href="/end/{{ i.id }}">Finish</a></td>
+      {% endif %}
+      <td>Button</td>
+    </tr>
+      {% endfor %}
+  </tbody>
+  </table>
+
+    <a class="btn btn-primary buttons" href="{{ url_for('add') }}">Add new task</a>
+  </div>
+
+  </body>
+</html>
