@@ -6,3 +6,12 @@ th {
   font-size: 1.1em;
   color: #334257;
   }
+
+.btn {
+  width: 180px;
+  margin: 0 10px;}
+
+.edit-screen .btn {
+  position: relative;
+  right: 10px;
+}

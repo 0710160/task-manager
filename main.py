@@ -41,6 +41,7 @@ def home():
     all_tasks = TaskList.query.all()
     return render_template("index.html", all_tasks=all_tasks)
 
+
 @app.route("/start/<task_id>")
 def start(task_id):
     #Starts timer
@@ -50,6 +51,7 @@ def start(task_id):
     db.session.commit()
     all_tasks = TaskList.query.all()
     return render_template("index.html", all_tasks=all_tasks)
+
 
 @app.route("/end/<task_id>")
 def end(task_id):
@@ -62,9 +64,40 @@ def end(task_id):
     return render_template("index.html", all_tasks=all_tasks)
 
 
-@app.route("/add")
+@app.route("/add", methods=["GET", "POST"])
 def add():
-    pass
+    if request.method == "GET":
+        return render_template("add.html")
+    else:
+        pass
+
+
+@app.route("/edit/<task_id>", methods=["GET", "POST"])
+def edit(task_id):
+    edit_task = TaskList.query.get(task_id)
+    notes = db.session.query(Notes).filter_by(task_id=edit_task.id)
+    if request.method == "GET":
+        return render_template("edit.html", task=edit_task, notes=notes)
+    else:
+        if request.form["name"] == "":
+            pass
+        else:
+            new_name = request.form["name"]
+            edit_task.name = new_name
+        if request.form["hours"] == "":
+            pass
+        else:
+            new_hours = request.form["hours"]
+            edit_task.hours_spent = new_hours
+        if request.form["add_note"] == "":
+            pass
+        else:
+            note = request.form["add_note"]
+            new_note = Notes(task_id=task_id, note=note)
+            db.session.add(new_note)
+    db.session.commit()
+    all_tasks = TaskList.query.all()
+    return render_template("index.html", all_tasks=all_tasks)
 
 
 if __name__ == "__main__":
