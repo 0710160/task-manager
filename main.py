@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from time import time
 from datetime import datetime
 import os
+import psycopg2
 
 ##TODO: add footer with Snaptank info just for shigs
 ##TODO: add media query for mobile use
@@ -36,7 +37,7 @@ class Notes(db.Model):
     done = db.Column(db.Boolean, default=False)
 
 
-#db.create_all()
+db.create_all()
 
 
 @app.route("/")
