@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" sizes="32x32" type="image/png">
     <title>Edit Task</title>
     <!-- Bootstrap CSS -->
@@ -13,28 +13,34 @@
 </head>
   <body>
 
+  <div class="task-man p-4 p-md-5 mb-4 text-white rounded bg-dark">
+      <div class="col-md-6 px-0">
+          <h1 class="display-4">Task Manager</h1>
+      </div>
+  </div>
+
   <div class="edit-screen container col-xxl-8 px-4 py-5">
     <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
       <div class="col-10 col-sm-8 col-lg-6">
         <img src="https://picsum.photos/700/500" class="d-block mx-lg-auto img-fluid">
       </div>
       <div class="col-lg-6">
-        <h1 class="display-5 fw-bold lh-1 mb-3">Editing Task</h1>
+        <h1 class="display-5 fw-bold lh-1 mb-3">Editing Task {{ task.id }}</h1>
 
           <form action="" method="POST">
-              <input type="string", name="name", style="width:345px;", placeholder="{{ task.name }}">
-              <input type="float", name="hours", style="width:50px;", placeholder="{{ task.hours_spent }}"><br>
+              <input type="string", name="name", style="width:305px;", placeholder="{{ task.name }}">
+              <input type="float", name="hours", style="width:90px;", placeholder="{{ '%0.1f' | format(task.hours_spent|float) }} hrs"><br>
               <ul>
                   {% for note in notes %}
                   <li>{{ note.note }}</li>
                   {% endfor %}
               </ul>
-              <textarea maxlength="249", style="width:400px;", name="notes", placeholder="new note"></textarea>
+              <textarea maxlength="249", style="width:400px;", name="notes", placeholder="New note"></textarea>
 
         <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-            <button class="btn btn-primary btn-lg px-4 me-md-2" type="submit">Submit</button>
-            <a class="btn btn-primary btn-lg px-4 me-md-2" href="{{ url_for('home') }}">Return Home</a>
-            <!--a class="btn btn-danger buttons" href="/complete/{{ task.id }}">Delete Job</a-->
+            <button class="btn btn-dark btn-lg px-4 me-md-2" type="submit">Submit</button>
+            <a class="btn btn-dark btn-lg px-4 me-md-2" href="{{ url_for('home') }}">Home</a>
+            <br>
         </div>
           </form>
       </div>

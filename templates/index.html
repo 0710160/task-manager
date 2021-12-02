@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" sizes="32x32" type="image/png">
     <title>Task List</title>
     <!-- Bootstrap CSS -->
@@ -13,7 +13,14 @@
 </head>
   <body>
 
-  <div class="container-fluid">
+  <div class="task-man p-4 p-md-5 mb-4 text-white rounded bg-dark">
+    <div class="col-md-6 px-0">
+      <h1 class="display-4">Task Manager</h1>
+    </div>
+  </div>
+
+  <div class="container col-xxl-8 px-4 py-5">
+  <h2>Active Tasks</h2>
   <table class="table">
   <thead>
   <tr>
@@ -26,23 +33,48 @@
   </thead>
 
   <tbody>
-    {% for i in all_tasks %}
+    {% for i in active_tasks %}
     <tr>
-      <td> {{ i.name }} </td>
+      <td><a href="/edit/{{ i.id }}"> {{ i.name }} </a></td>
       <td> {{ i.date_start }}</td>
       <td> {{ '%0.1f' | format(i.hours_spent|float) }}</td>
       {% if i.active == False %}
-        <td><a class="btn btn-primary buttons" href="/start/{{ i.id }}">Start</a></td>
+        <td><a class="btn btn-dark buttons" href="/start/{{ i.id }}">Start</a></td>
       {% else %}
-        <td><a class="btn btn-primary buttons" href="/end/{{ i.id }}">Finish</a></td>
+        <td><a class="btn btn-dark buttons" href="/end/{{ i.id }}">Finish</a></td>
       {% endif %}
-      <td>Button</td>
+      <td><a class="btn btn-dark buttons" href="/complete/{{ i.id }}">Complete</a></td>
     </tr>
       {% endfor %}
   </tbody>
   </table>
 
-    <a class="btn btn-primary buttons" href="{{ url_for('add') }}">Add new task</a>
+    <a class="btn btn-dark buttons" href="{{ url_for('add') }}">Add new task</a>
+    <br><br>
+    <br><br>
+<h2>Completed Tasks</h2>
+    <table class="table">
+      <thead>
+      <tr>
+        <th scope="col">Task name</th>
+        <th scope="col">Date started</th>
+        <th scope="col">Date finished</th>
+        <th scope="col">Hours spent</th>
+      </tr>
+      </thead>
+
+      <tbody>
+      {% for i in completed_tasks %}
+      <tr>
+        <td><a href="/edit/{{ i.id }}"> {{ i.name }} </a></td>
+        <td> {{ i.date_start }}</td>
+        <td> {{ i.date_end }}</td>
+        <td> {{ '%0.1f' | format(i.hours_spent|float) }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
   </div>
 
   </body>

@@ -1,5 +1,6 @@
-.container-fluid {
-  width: 90vw;
+.task-man {
+  height: 25vh;
+  width: 100vw;
 }
 
 th {
@@ -12,7 +13,7 @@ textarea {
 }
 
 .btn {
-  width: 180px;
+  width: 150px;
   margin: 0 10px;}
 
 .edit-screen .btn {

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
     <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" sizes="32x32" type="image/png">
     <title>Add Task</title>
     <!-- Bootstrap CSS -->
@@ -13,37 +13,34 @@
 </head>
   <body>
 
-  <div class="container-fluid">
-  <table class="table">
-  <thead>
-  <tr>
-    <th scope="col">Task name</th>
-    <th scope="col">Date started</th>
-    <th scope="col">Hours spent</th>
-    <th scope="col">Start/end</th>
-    <th scope="col">Complete</th>
-  </tr>
-  </thead>
-
-  <tbody>
-    {% for i in all_tasks %}
-    <tr>
-      <td> {{ i.name }} </td>
-      <td> {{ i.date_start }}</td>
-      <td> {{ '%0.1f' | format(i.hours_spent|float) }}</td>
-      {% if i.active == False %}
-        <td><a class="btn btn-primary buttons" href="/start/{{ i.id }}">Start</a></td>
-      {% else %}
-        <td><a class="btn btn-primary buttons" href="/end/{{ i.id }}">Finish</a></td>
-      {% endif %}
-      <td>Button</td>
-    </tr>
-      {% endfor %}
-  </tbody>
-  </table>
-
-    <a class="btn btn-primary buttons" href="{{ url_for('add') }}">Add new task</a>
+  <div class="task-man p-4 p-md-5 mb-4 text-white rounded bg-dark">
+      <div class="col-md-6 px-0">
+          <h1 class="display-4">Task Manager</h1>
+      </div>
   </div>
+
+  <div class="container col-xxl-8 px-4 py-5">
+    <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+      <div class="col-10 col-sm-8 col-lg-6">
+        <img src="https://picsum.photos/700/500" class="d-block mx-lg-auto img-fluid">
+      </div>
+      <div class="col-lg-6">
+        <h1 class="display-5 fw-bold lh-1 mb-3">Add New Task</h1>
+
+        <form action="" method="POST">
+          <input type="string", name="name", style="width:400px;", placeholder="Task Description">
+            <ul></ul>
+          <textarea maxlength="249", style="width:400px; height:187px;", name="note", placeholder="Notes"></textarea>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            <button class="btn btn-dark btn-lg px-4 me-md-2" type="submit">Submit</button>
+            <a class="btn btn-dark btn-lg px-4 me-md-2" href="{{ url_for('home') }}">Home</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 
   </body>
 </html>
