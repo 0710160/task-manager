@@ -19,7 +19,7 @@
     </div>
   </div>
 
-  <div class="container col-xxl-8 px-4 py-5">
+  <div class="task-list container col-xxl-8 px-4 py-5">
   <h2>Active Tasks</h2>
   <table class="table">
   <thead>
@@ -41,9 +41,9 @@
       {% if i.active == False %}
         <td><a class="btn btn-dark buttons" href="/start/{{ i.id }}">Start</a></td>
       {% else %}
-        <td><a class="btn btn-dark buttons" href="/end/{{ i.id }}">Finish</a></td>
+        <td><a class="btn btn-primary buttons" href="/end/{{ i.id }}">End</a></td>
       {% endif %}
-      <td><a class="btn btn-dark buttons" href="/complete/{{ i.id }}">Complete</a></td>
+      <td><a class="btn btn-dark buttons" href="/complete/{{ i.id }}">Complete Task</a></td>
     </tr>
       {% endfor %}
   </tbody>

@@ -1,6 +1,6 @@
+/*---------------------------------------- TASK TABLE ---------------------------------------*/
 .task-man {
-  height: 20vh;
-  width: 99vw;
+  height: 18vh; width: 99vw;
 }
 
 th {
@@ -8,15 +8,31 @@ th {
   color: #334257;
   }
 
-textarea {
-  margin-bottom: 20px;
-}
-
 .btn {
   width: 150px;
   margin: 0 10px;}
 
+/*---------------------------------------- EDIT SCREEN ---------------------------------------*/
+textarea {
+  margin-bottom: 20px;
+}
+
 .edit-screen .btn {
   position: relative;
   right: 10px;
+}
+
+ul {
+  margin-top: 10px;
+}
+
+/*---------------------------------------- MEDIA QUERIES ---------------------------------------*/
+@media only screen and (max-width:1300px) {
+  .task-man {
+    height: 8vh;
+  }
+  th {
+    font-size: 0.9em;
+  }
+
 }

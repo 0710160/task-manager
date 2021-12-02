@@ -5,9 +5,6 @@ from datetime import datetime
 import os
 import psycopg2
 
-##TODO: add footer with Snaptank info just for shigs
-##TODO: add media query for mobile use
-
 app = Flask(__name__)
 
 ## Connect to DB
@@ -49,7 +46,7 @@ def home():
 
 @app.route("/start/<task_id>")
 def start(task_id):
-    #Starts timer
+    # Starts timer
     task = TaskList.query.get(task_id)
     task.active = True
     task.task_start_time = time()
@@ -61,7 +58,7 @@ def start(task_id):
 
 @app.route("/end/<task_id>")
 def end(task_id):
-    #Ends timer and adds hours to db
+    # Ends timer and adds hours to db
     task = TaskList.query.get(task_id)
     task.active = False
     time_in_hours = (time() - task.task_start_time) / 3600
@@ -83,7 +80,7 @@ def add():
         new_task_name = request.form["name"]
         new_task = TaskList(name=new_task_name)
         db.session.add(new_task)
-        #get hold of new task after adding it to db so assign task_id
+        # get hold of new task after adding it to db so assign task_id
         get_new_task = db.session.query(TaskList).filter_by(name=new_task_name).first()
         new_task_notes = request.form["note"]
         new_note = Notes(note=new_task_notes, task_id=get_new_task.id)
@@ -145,6 +142,18 @@ def delete(task_id):
     completed_tasks = db.session.query(TaskList).filter_by(completed=True).all()
     return redirect(url_for('home', active_tasks=active_tasks, completed_tasks=completed_tasks))
 
+
+@app.route("/note/<note_id>")
+def note(note_id):
+    edit_task = TaskList.query.get(task_id)
+    notes = db.session.query(Notes).filter_by(task_id=edit_task.id).all()
+    edit_note = Notes.query.get(note_id)
+    if edit_note.done is True:
+        edit_note.done = False
+    else:
+        edit_note.done = True
+    db.session.commit()
+    return render_template("edit.html", task=edit_task, notes=notes)
 
 if __name__ == "__main__":
     app.run(debug=True)
