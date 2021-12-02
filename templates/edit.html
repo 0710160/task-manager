@@ -22,16 +22,14 @@
         <h1 class="display-5 fw-bold lh-1 mb-3">Editing Task</h1>
 
           <form action="" method="POST">
-              <input type="string", name="new_name", style="width:295px;", placeholder="{{ task.name }}">
-              <input type="float", name="new_hours", style="width:50px;", placeholder="{{ task.hours_spent }}"><br>
+              <input type="string", name="name", style="width:345px;", placeholder="{{ task.name }}">
+              <input type="float", name="hours", style="width:50px;", placeholder="{{ task.hours_spent }}"><br>
               <ul>
-                  {% if notes.note %}
                   {% for note in notes %}
-                  <li>{{ note }}</li>
+                  <li>{{ note.note }}</li>
                   {% endfor %}
-                  {% endif %}
               </ul>
-              <textarea maxlength="249", style="width:350px;", name="notes", placeholder="new note"></textarea>
+              <textarea maxlength="249", style="width:400px;", name="notes", placeholder="new note"></textarea>
 
         <div class="d-grid gap-2 d-md-flex justify-content-md-start">
             <button class="btn btn-primary btn-lg px-4 me-md-2" type="submit">Submit</button>

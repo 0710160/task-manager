@@ -75,7 +75,7 @@ def add():
 @app.route("/edit/<task_id>", methods=["GET", "POST"])
 def edit(task_id):
     edit_task = TaskList.query.get(task_id)
-    notes = db.session.query(Notes).filter_by(task_id=edit_task.id)
+    notes = db.session.query(Notes).filter_by(task_id=edit_task.id).all()
     if request.method == "GET":
         return render_template("edit.html", task=edit_task, notes=notes)
     else:
@@ -89,15 +89,16 @@ def edit(task_id):
         else:
             new_hours = request.form["hours"]
             edit_task.hours_spent = new_hours
-        if request.form["add_note"] == "":
+        if request.form["notes"] == "":
             pass
         else:
-            note = request.form["add_note"]
+            note = request.form["notes"]
             new_note = Notes(task_id=task_id, note=note)
             db.session.add(new_note)
     db.session.commit()
     all_tasks = TaskList.query.all()
-    return render_template("index.html", all_tasks=all_tasks)
+    return redirect(url_for("home", all_tasks=all_tasks))
+
 
 
 if __name__ == "__main__":

@@ -7,6 +7,10 @@ th {
   color: #334257;
   }
 
+textarea {
+  margin-bottom: 20px;
+}
+
 .btn {
   width: 180px;
   margin: 0 10px;}
