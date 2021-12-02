@@ -2,10 +2,16 @@ from flask import Flask, render_template, request, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
 from time import time
 from datetime import datetime
+import os
+
+##TODO: add footer with Snaptank info just for shigs
+##TODO: add media query for mobile use
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///timer.db'
+## Connect to DB
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", 'sqlite:///timer.db')
+app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -31,10 +37,6 @@ class Notes(db.Model):
 
 
 #db.create_all()
-## Initial population
-#init_entry = TaskList(name="test entry", date_start=datetime.today().strftime('%Y-%m-%d'), hours_spent=0, active=False, completed=False)
-#db.session.add(init_entry)
-#db.session.commit()
 
 
 @app.route("/")
@@ -61,7 +63,11 @@ def end(task_id):
     #Ends timer and adds hours to db
     task = TaskList.query.get(task_id)
     task.active = False
-    task.hours_spent += (time() - task.task_start_time) / 3600
+    time_in_hours = (time() - task.task_start_time) / 3600
+    if task.hours_spent is None:
+        task.hours_spent = time_in_hours
+    else:
+        task.hours_spent = float(time_in_hours + task.hours_spent)
     db.session.commit()
     active_tasks = db.session.query(TaskList).filter_by(completed=False).all()
     completed_tasks = db.session.query(TaskList).filter_by(completed=True).all()
