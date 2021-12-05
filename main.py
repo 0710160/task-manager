@@ -131,29 +131,23 @@ def complete(task_id):
     return redirect(url_for('home', active_tasks=active_tasks, completed_tasks=completed_tasks))
 
 
+@app.route("/note/<task_id>/<note_id>")
+def note(task_id, note_id):
+    edit_note = Notes.query.get(note_id)
+    edit_note.done = not edit_note.done
+    db.session.commit()
+    return redirect(request.referrer)
+
+
 @app.route("/delete/<task_id>")
 def delete(task_id):
     delete_task = TaskList.query.get(task_id)
     db.session.delete(delete_task)
-    delete_notes = db.session.query(Notes).filter_by(task_id=delete_task.id).all()
-    db.session.delete(delete_notes)
     db.session.commit()
     active_tasks = db.session.query(TaskList).filter_by(completed=False).all()
     completed_tasks = db.session.query(TaskList).filter_by(completed=True).all()
     return redirect(url_for('home', active_tasks=active_tasks, completed_tasks=completed_tasks))
 
-
-@app.route("/note/<note_id>")
-def note(note_id):
-    edit_task = TaskList.query.get(task_id)
-    notes = db.session.query(Notes).filter_by(task_id=edit_task.id).all()
-    edit_note = Notes.query.get(note_id)
-    if edit_note.done is True:
-        edit_note.done = False
-    else:
-        edit_note.done = True
-    db.session.commit()
-    return render_template("edit.html", task=edit_task, notes=notes)
 
 if __name__ == "__main__":
     app.run(debug=True)

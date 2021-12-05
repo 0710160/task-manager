@@ -30,10 +30,14 @@
           <form action="" method="POST">
               <input type="string", name="name", style="width:305px;", placeholder="Rename task">
               <input type="float", name="hours", style="width:90px;", placeholder="{{ '%0.1f' | format(task.hours_spent|float) }} hrs"><br>
-              <ul style="list-style:url({{ url_for('static', filename='chevron-double-right.svg') }});">
+              <ul>
                   {% if notes %}
                   {% for note in notes %}
-                  <li>{{ note.note }}</li>
+                  {% if note.done == True %}
+                  <li><a href="/note/{{ task.id }}/{{ note.id }}"><img class="check" src="{{url_for('static', filename='file-check.svg') }}" /></a><span></span>{{ note.note }}</li>
+                  {% else %}
+                  <li><a href="/note/{{ task.id }}/{{ note.id }}"><img class="check" src="{{url_for('static', filename='file.svg') }}" /></a><span></span>{{ note.note }}</li>
+                  {% endif %}
                   {% endfor %}
                   {% endif %}
               </ul>
