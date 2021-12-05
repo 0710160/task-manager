@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" sizes="32x32" type="image/png">
+    <title>Task Manager</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+</head>
+<body>
+  <div class="task-man p-4 p-md-5 mb-4 text-white bg-dark">
+      <div class="row">
+      <div class="col-md-6 px-0">
+          <h1 class="display-4">Task Manager</h1>
+      </div>
+      <div class="col-md-6 px-0 navs">
+          <ul>
+              <li><a href="{{ url_for('home') }}">Home</a></li>
+              {% if not current_user.is_authenticated %}
+              <li><a href="{{ url_for('login') }}">Log In</a></li>
+              <li><a href="{{ url_for('register') }}">Register</a></li>
+              {% else %}
+              <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+              {% endif %}
+          </ul>
+      </div>
+      </div>
+  </div>
+
+    {% block content %}
+    {% endblock %}
+
+</body>
+</html>

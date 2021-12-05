@@ -1,23 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" sizes="32x32" type="image/png">
-    <title>Edit Task</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> 
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
-</head>
-  <body>
-
-  <div class="task-man p-4 p-md-5 mb-4 text-white rounded bg-dark">
-      <div class="col-md-6 px-0">
-          <h1 class="display-4">Task Manager</h1>
-      </div>
-  </div>
+{% extends "base.html" %}
+{% block content %}
 
   <div class="edit-screen container col-xxl-8 px-4 py-5">
     <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
@@ -53,5 +35,4 @@
     </div>
   </div>
 
-  </body>
-</html>
+{% endblock %}
