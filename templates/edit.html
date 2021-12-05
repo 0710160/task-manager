@@ -13,8 +13,8 @@
               <input type="string", name="name", style="width:305px;", placeholder="Rename task">
               <input type="float", name="hours", style="width:90px;", placeholder="{{ '%0.1f' | format(task.hours_spent|float) }} hrs"><br>
               <ul>
-                  {% if notes %}
-                  {% for note in notes %}
+                  {% if task.note %}
+                  {% for note in task.note %}
                   {% if note.done == True %}
                   <li><a href="/note/{{ task.id }}/{{ note.id }}"><img class="check" src="{{url_for('static', filename='file-check.svg') }}" /></a><span></span>{{ note.note }}</li>
                   {% else %}

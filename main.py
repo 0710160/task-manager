@@ -34,7 +34,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.String(256), unique=True)
     password = db.Column(db.String)
-    tasks = relationship("TaskList", back_populates="user")
+    tasks = relationship("TaskList", backref="user", lazy="dynamic")
 
 
 ## TaskList table to hold all tasks
@@ -49,7 +49,6 @@ class TaskList(db.Model):
     active = db.Column(db.Boolean, default=False)
     completed = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    user = relationship("User", back_populates="tasks")
     note = relationship("Notes", back_populates="task")
 
 
@@ -66,11 +65,9 @@ db.create_all()
 
 
 @app.route("/")
+@login_required
 def home():
-    tasks = TaskList.query.all()
-    for task in tasks:
-        for i in task.note:
-            print(i.note)
+    tasks = current_user.tasks.all()
     return render_template("index.html", tasks=tasks, current_user=current_user)
 
 
@@ -81,9 +78,8 @@ def start(task_id):
     task.active = True
     task.task_start_time = time()
     db.session.commit()
-    active_tasks = db.session.query(TaskList).filter_by(completed=False).all()
-    completed_tasks = db.session.query(TaskList).filter_by(completed=True).all()
-    return redirect(url_for('home', active_tasks=active_tasks, completed_tasks=completed_tasks, logged_in=current_user.is_authenticated))
+    return redirect(request.referrer)
+
 
 
 @app.route("/end/<task_id>")
@@ -97,31 +93,34 @@ def end(task_id):
     else:
         task.hours_spent = float(time_in_hours + task.hours_spent)
     db.session.commit()
-    active_tasks = db.session.query(TaskList).filter_by(completed=False).all()
-    completed_tasks = db.session.query(TaskList).filter_by(completed=True).all()
-    return redirect(url_for('home', active_tasks=active_tasks, completed_tasks=completed_tasks, logged_in=current_user.is_authenticated))
+    return redirect(request.referrer)
+
 
 
 @app.route("/add", methods=["GET", "POST"])
+@login_required
 def add():
     if request.method == "GET":
         return render_template("add.html")
     else:
         new_task_name = request.form["name"]
-        new_task = TaskList(name=new_task_name)
+        new_task = TaskList(name=new_task_name, user=current_user)
         db.session.add(new_task)
         # get hold of new task after adding it to db so assign task_id
         get_new_task = db.session.query(TaskList).filter_by(name=new_task_name).first()
         new_task_notes = request.form["note"]
-        new_note = Notes(note=new_task_notes, task_id=get_new_task.id)
-        db.session.add(new_note)
+        if new_task_notes == "":
+            pass
+        else:
+            new_note = Notes(note=new_task_notes, task_id=get_new_task.id)
+            db.session.add(new_note)
         db.session.commit()
-        active_tasks = db.session.query(TaskList).filter_by(completed=False).all()
-        completed_tasks = db.session.query(TaskList).filter_by(completed=True).all()
-        return redirect(url_for('home', active_tasks=active_tasks, completed_tasks=completed_tasks, logged_in=current_user.is_authenticated))
+        tasks = current_user.tasks.all()
+        return redirect(url_for('home', tasks=tasks, current_user=current_user))
 
 
 @app.route("/edit/<task_id>", methods=["GET", "POST"])
+@login_required
 def edit(task_id):
     edit_task = TaskList.query.get(task_id)
     notes = db.session.query(Notes).filter_by(task_id=edit_task.id).all()
@@ -145,9 +144,8 @@ def edit(task_id):
             new_note = Notes(task_id=task_id, note=note)
             db.session.add(new_note)
     db.session.commit()
-    active_tasks = db.session.query(TaskList).filter_by(completed=False).all()
-    completed_tasks = db.session.query(TaskList).filter_by(completed=True).all()
-    return redirect(url_for('home', active_tasks=active_tasks, completed_tasks=completed_tasks, logged_in=current_user.is_authenticated))
+    tasks = current_user.tasks.all()
+    return redirect(url_for('home', tasks=tasks, current_user=current_user))
 
 
 @app.route("/complete/<task_id>")
@@ -156,9 +154,8 @@ def complete(task_id):
     edit_task.completed = True
     edit_task.date_end = datetime.today().strftime('%d-%m-%Y')
     db.session.commit()
-    active_tasks = db.session.query(TaskList).filter_by(completed=False).all()
-    completed_tasks = db.session.query(TaskList).filter_by(completed=True).all()
-    return redirect(url_for('home', active_tasks=active_tasks, completed_tasks=completed_tasks, logged_in=current_user.is_authenticated))
+    return redirect(request.referrer)
+
 
 
 @app.route("/note/<task_id>/<note_id>")
@@ -174,9 +171,8 @@ def delete(task_id):
     delete_task = TaskList.query.get(task_id)
     db.session.delete(delete_task)
     db.session.commit()
-    active_tasks = db.session.query(TaskList).filter_by(completed=False).all()
-    completed_tasks = db.session.query(TaskList).filter_by(completed=True).all()
-    return redirect(url_for('home', active_tasks=active_tasks, completed_tasks=completed_tasks, logged_in=current_user.is_authenticated))
+    tasks = current_user.tasks.all()
+    return redirect(url_for('home', tasks=tasks, current_user=current_user))
 
 
 ## User handling functions
@@ -199,9 +195,8 @@ def register():
             db.session.add(new_user)
             db.session.commit()
             login_user(new_user, remember=True)
-            active_tasks = db.session.query(TaskList).filter_by(completed=False).all()
-            completed_tasks = db.session.query(TaskList).filter_by(completed=True).all()
-            return redirect(url_for('home', active_tasks=active_tasks, completed_tasks=completed_tasks, logged_in=current_user.is_authenticated))
+            tasks = current_user.tasks.all()
+            return redirect(url_for('home', tasks=tasks, current_user=current_user))
 
 
 @app.route('/login', methods=["GET", "POST"])
@@ -219,17 +214,26 @@ def login():
             return redirect(url_for('login'))
         else:
             login_user(user, remember=True)
-            active_tasks = db.session.query(TaskList).filter_by(completed=False).all()
-            completed_tasks = db.session.query(TaskList).filter_by(completed=True).all()
-            return redirect(url_for('home', active_tasks=active_tasks, completed_tasks=completed_tasks, logged_in=current_user.is_authenticated))
+            tasks = current_user.tasks.all()
+            return redirect(url_for('home', tasks=tasks, current_user=current_user))
 
 
 @app.route("/logout")
 def logout():
     logout_user()
-    active_tasks = db.session.query(TaskList).filter_by(completed=False).all()
-    completed_tasks = db.session.query(TaskList).filter_by(completed=True).all()
-    return redirect(url_for('home', active_tasks=active_tasks, completed_tasks=completed_tasks))
+    return redirect(url_for('login'))
+
+
+## Error handling
+@app.errorhandler(401)
+def auth_401(error):
+    flash("You need to be logged in to do that.")
+    return render_template("login.html"), 401
+
+
+@app.errorhandler(500)
+def special_exception_handler(error):
+    return "Database error."
 
 
 if __name__ == "__main__":
