@@ -2,33 +2,20 @@
 {% block content %}
 
   <div class="edit-screen container col-xxl-8 px-4 py-5">
-    <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+      <h1 class="display-5 fw-bold lh-1 mb-3">Task #{{ task.id }}: {{ task.name }}</h1>
+    <div class="row flex-lg-row-reverse align-items-start g-5 py-5">
       <div class="col-10 col-sm-8 col-lg-6">
         <img src="https://picsum.photos/700/500" class="d-block mx-lg-auto img-fluid">
       </div>
       <div class="col-lg-6">
-        <h1 class="display-5 fw-bold lh-1 mb-3">Task #{{ task.id }}: {{ task.name }}</h1>
-
           <form action="" method="POST">
-              <input type="string", name="name", style="width:305px;", placeholder="Rename task">
+              <input type="string", name="name", style="width:434px;", placeholder="Rename task">
               <input type="float", name="hours", style="width:90px;", placeholder="{{ '%0.1f' | format(task.hours_spent|float) }} hrs"><br>
-              <ul>
-                  {% if task.note %}
-                  {% for note in task.note %}
-                  {% if note.done == True %}
-                  <li><a href="/note/{{ task.id }}/{{ note.id }}"><img class="check" src="{{url_for('static', filename='file-check.svg') }}" /></a><span></span>{{ note.note }}</li>
-                  {% else %}
-                  <li><a href="/note/{{ task.id }}/{{ note.id }}"><img class="check" src="{{url_for('static', filename='file.svg') }}" /></a><span></span>{{ note.note }}</li>
-                  {% endif %}
-                  {% endfor %}
-                  {% endif %}
-              </ul>
-              <textarea maxlength="249", style="width:400px;", name="notes", placeholder="New note"></textarea>
-
+              {{ ckeditor.load() }}
+              {{ ckeditor.create(value=task_info) }}
         <div class="d-grid gap-2 d-md-flex justify-content-md-start">
             <button class="btn btn-dark btn-lg px-4 me-md-2" type="submit">Submit</button>
             <a class="btn btn-dark btn-lg px-4 me-md-2" href="{{ url_for('home') }}">Home</a>
-            <br>
         </div>
           </form>
       </div>

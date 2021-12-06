@@ -1,16 +1,20 @@
 from flask import Flask, render_template, request, url_for, redirect, flash
+from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
 from time import time
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import HTTPException
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from flask_ckeditor import CKEditor
 import os
 import psycopg2
 
 app = Flask(__name__)
+Bootstrap(app)
+ckeditor = CKEditor(app)
+
 
 ## Connect to DB
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", 'sqlite:///timer.db')
@@ -42,6 +46,7 @@ class TaskList(db.Model):
     __tablename__ = 'tasklist'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(256))
+    info = db.Column(db.String)
     date_start = db.Column(db.String, default=datetime.today().strftime('%d-%m-%Y'))
     date_end = db.Column(db.String)
     hours_spent = db.Column(db.Float)
@@ -49,19 +54,9 @@ class TaskList(db.Model):
     active = db.Column(db.Boolean, default=False)
     completed = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    note = relationship("Notes", back_populates="task")
 
 
-## Notes table to hold to-dos and notes associated with each task
-class Notes(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    task_id = db.Column(db.Integer, db.ForeignKey("tasklist.id"))
-    task = relationship("TaskList", back_populates="note")
-    note = db.Column(db.String)
-    done = db.Column(db.Boolean, default=False)
-
-
-db.create_all()
+#db.create_all()
 
 
 @app.route("/")
@@ -104,16 +99,9 @@ def add():
         return render_template("add.html")
     else:
         new_task_name = request.form["name"]
-        new_task = TaskList(name=new_task_name, user=current_user)
+        ckeditor_data = request.form.get('ckeditor')
+        new_task = TaskList(name=new_task_name, info=ckeditor_data, user=current_user)
         db.session.add(new_task)
-        # get hold of new task after adding it to db so assign task_id
-        get_new_task = db.session.query(TaskList).filter_by(name=new_task_name).first()
-        new_task_notes = request.form["note"]
-        if new_task_notes == "":
-            pass
-        else:
-            new_note = Notes(note=new_task_notes, task_id=get_new_task.id)
-            db.session.add(new_note)
         db.session.commit()
         tasks = current_user.tasks.all()
         return redirect(url_for('home', tasks=tasks, current_user=current_user))
@@ -123,9 +111,9 @@ def add():
 @login_required
 def edit(task_id):
     edit_task = TaskList.query.get(task_id)
-    notes = db.session.query(Notes).filter_by(task_id=edit_task.id).all()
     if request.method == "GET":
-        return render_template("edit.html", task=edit_task, notes=notes)
+        task_info = edit_task.info
+        return render_template("edit.html", task=edit_task, task_info=task_info)
     else:
         if request.form["name"] == "":
             pass
@@ -137,12 +125,10 @@ def edit(task_id):
         else:
             new_hours = request.form["hours"]
             edit_task.hours_spent = new_hours
-        if request.form["notes"] == "":
+        if request.form["ckeditor"] == "":
             pass
         else:
-            note = request.form["notes"]
-            new_note = Notes(task_id=task_id, note=note)
-            db.session.add(new_note)
+            edit_task.info = request.form["ckeditor"]
     db.session.commit()
     tasks = current_user.tasks.all()
     return redirect(url_for('home', tasks=tasks, current_user=current_user))
@@ -153,15 +139,6 @@ def complete(task_id):
     edit_task = TaskList.query.get(task_id)
     edit_task.completed = True
     edit_task.date_end = datetime.today().strftime('%d-%m-%Y')
-    db.session.commit()
-    return redirect(request.referrer)
-
-
-
-@app.route("/note/<task_id>/<note_id>")
-def note(task_id, note_id):
-    edit_note = Notes.query.get(note_id)
-    edit_note.done = not edit_note.done
     db.session.commit()
     return redirect(request.referrer)
 
