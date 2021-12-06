@@ -1,16 +1,26 @@
-from flask import Flask, render_template, request, url_for, redirect, flash
+from flask import Flask, render_template, request, url_for, redirect, flash, send_from_directory
+from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import FlaskForm
+from wtforms import StringField, IntegerField, SubmitField
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
 from time import time
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import HTTPException
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from flask_ckeditor import CKEditor, CKEditorField, upload_success, upload_fail
 import os
 import psycopg2
 
 app = Flask(__name__)
+Bootstrap(app)
+ckeditor = CKEditor(app)
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['CKEDITOR_SERVE_LOCAL'] = True
+app.config['CKEDITOR_FILE_UPLOADER'] = 'upload'
+app.config['UPLOADED_PATH'] = os.path.join(basedir, 'uploads')
+app.config['CKEDITOR_HEIGHT'] = 250
 
 ## Connect to DB
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", 'sqlite:///timer.db')
@@ -28,6 +38,14 @@ def load_user(user_id):
     return User.query.get(user_id)
 
 
+## WTForms
+class TaskForm(FlaskForm):
+    name = StringField('Task name:')
+    info = CKEditorField('Task info')
+    hours = IntegerField('  Hours spent:')
+    submit = SubmitField()
+
+
 ## User table
 class User(UserMixin, db.Model):
     __tablename__ = 'user'
@@ -42,6 +60,7 @@ class TaskList(db.Model):
     __tablename__ = 'tasklist'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(256))
+    info = db.Column(db.String)
     date_start = db.Column(db.String, default=datetime.today().strftime('%d-%m-%Y'))
     date_end = db.Column(db.String)
     hours_spent = db.Column(db.Float)
@@ -49,16 +68,6 @@ class TaskList(db.Model):
     active = db.Column(db.Boolean, default=False)
     completed = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    note = relationship("Notes", back_populates="task")
-
-
-## Notes table to hold to-dos and notes associated with each task
-class Notes(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    task_id = db.Column(db.Integer, db.ForeignKey("tasklist.id"))
-    task = relationship("TaskList", back_populates="note")
-    note = db.Column(db.String)
-    done = db.Column(db.Boolean, default=False)
 
 
 db.create_all()
@@ -100,20 +109,14 @@ def end(task_id):
 @app.route("/add", methods=["GET", "POST"])
 @login_required
 def add():
+    form = TaskForm()
     if request.method == "GET":
-        return render_template("add.html")
+        return render_template("add.html", form=form)
     else:
-        new_task_name = request.form["name"]
-        new_task = TaskList(name=new_task_name, user=current_user)
+        new_task_name = form.name.data
+        ckeditor_data = form.info.data
+        new_task = TaskList(name=new_task_name, info=ckeditor_data, user=current_user)
         db.session.add(new_task)
-        # get hold of new task after adding it to db so assign task_id
-        get_new_task = db.session.query(TaskList).filter_by(name=new_task_name).first()
-        new_task_notes = request.form["note"]
-        if new_task_notes == "":
-            pass
-        else:
-            new_note = Notes(note=new_task_notes, task_id=get_new_task.id)
-            db.session.add(new_note)
         db.session.commit()
         tasks = current_user.tasks.all()
         return redirect(url_for('home', tasks=tasks, current_user=current_user))
@@ -122,27 +125,26 @@ def add():
 @app.route("/edit/<task_id>", methods=["GET", "POST"])
 @login_required
 def edit(task_id):
+    form = TaskForm()
     edit_task = TaskList.query.get(task_id)
-    notes = db.session.query(Notes).filter_by(task_id=edit_task.id).all()
     if request.method == "GET":
-        return render_template("edit.html", task=edit_task, notes=notes)
+        form.info.data = edit_task.info
+        return render_template("edit.html", task=edit_task, form=form)
     else:
-        if request.form["name"] == "":
+        if form.name.data == "":
             pass
         else:
-            new_name = request.form["name"]
+            new_name = form.name.data
             edit_task.name = new_name
-        if request.form["hours"] == "":
+        if form.hours.data == "":
             pass
         else:
-            new_hours = request.form["hours"]
+            new_hours = form.hours.data
             edit_task.hours_spent = new_hours
-        if request.form["notes"] == "":
+        if form.info.data == "":
             pass
         else:
-            note = request.form["notes"]
-            new_note = Notes(task_id=task_id, note=note)
-            db.session.add(new_note)
+            edit_task.info = form.info.data
     db.session.commit()
     tasks = current_user.tasks.all()
     return redirect(url_for('home', tasks=tasks, current_user=current_user))
@@ -157,15 +159,6 @@ def complete(task_id):
     return redirect(request.referrer)
 
 
-
-@app.route("/note/<task_id>/<note_id>")
-def note(task_id, note_id):
-    edit_note = Notes.query.get(note_id)
-    edit_note.done = not edit_note.done
-    db.session.commit()
-    return redirect(request.referrer)
-
-
 @app.route("/delete/<task_id>")
 def delete(task_id):
     delete_task = TaskList.query.get(task_id)
@@ -173,6 +166,24 @@ def delete(task_id):
     db.session.commit()
     tasks = current_user.tasks.all()
     return redirect(url_for('home', tasks=tasks, current_user=current_user))
+
+
+## CKEditor handling
+@app.route('/files/<filename>')
+def uploaded_files(filename):
+    path = app.config['UPLOADED_PATH']
+    return send_from_directory(path, filename)
+
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    f = request.files.get('upload')
+    extension = f.filename.split('.')[-1].lower()
+    if extension not in ['jpg', 'gif', 'png', 'jpeg']:
+        return upload_fail(message='Images only!')
+    f.save(os.path.join(app.config['UPLOADED_PATH'], f.filename))
+    url = url_for('uploaded_files', filename=f.filename)
+    return upload_success(url, filename=f.filename)
 
 
 ## User handling functions
