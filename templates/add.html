@@ -8,19 +8,20 @@
       <img src="https://picsum.photos/700/500" class="d-block mx-lg-auto img-fluid">
     </div>
     <div class="col-lg-6">
-      <form action="" method="POST">
-
-          <input type="string", name="name", style="width:529px;", placeholder="Task Description">
-          {{ ckeditor.load() }}
-          {{ ckeditor.create() }}
-          <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-            <button class="btn btn-dark btn-lg px-4 me-md-2" type="submit">Submit</button>
-            <a class="btn btn-dark btn-lg px-4 me-md-2" href="{{ url_for('home') }}">Home</a>
-          </div>
+        <form action="" method="POST">
+            {{ form.name.label }}
+            {{ form.name(size=55) }}<br>
+            {{ form.info }}<br>
+            {{ form.submit }}
+            <!--button class="btn btn-dark btn-lg px-4 me-md-2" type="submit">Submit</button>
+            <a class="btn btn-dark btn-lg px-4 me-md-2" href="{{ url_for('home') }}">Home</a-->
         </form>
+
       </div>
     </div>
   </div>
 </div>
+{{ ckeditor.load() }}
+{{ ckeditor.config(name="info") }}
 
 {% endblock %}

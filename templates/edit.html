@@ -9,17 +9,19 @@
       </div>
       <div class="col-lg-6">
           <form action="" method="POST">
-              <input type="string", name="name", style="width:434px;", placeholder="Rename task">
-              <input type="float", name="hours", style="width:90px;", placeholder="{{ '%0.1f' | format(task.hours_spent|float) }} hrs"><br>
-              {{ ckeditor.load() }}
-              {{ ckeditor.create(value=task_info) }}
-        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-            <button class="btn btn-dark btn-lg px-4 me-md-2" type="submit">Submit</button>
-            <a class="btn btn-dark btn-lg px-4 me-md-2" href="{{ url_for('home') }}">Home</a>
-        </div>
+              {{ form.name.label }}
+              {{ form.name(size=33) }}
+              {{ form.hours.label }}
+              {{ form.hours(size=3) }}<br>
+              {{ form.info }}<br>
+            {{ form.submit }}
+            <!--button class="btn btn-dark btn-lg px-4 me-md-2" type="submit">Submit</button>
+            <a class="btn btn-dark btn-lg px-4 me-md-2" href="{{ url_for('home') }}">Home</a-->
           </form>
       </div>
     </div>
   </div>
+{{ ckeditor.load() }}
+{{ ckeditor.config(name="info") }}
 
 {% endblock %}

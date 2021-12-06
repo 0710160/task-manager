@@ -1,20 +1,26 @@
-from flask import Flask, render_template, request, url_for, redirect, flash
+from flask import Flask, render_template, request, url_for, redirect, flash, send_from_directory
 from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import FlaskForm
+from wtforms import StringField, IntegerField, SubmitField
 from sqlalchemy.orm import relationship
 from time import time
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import HTTPException
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from flask_ckeditor import CKEditor
+from flask_ckeditor import CKEditor, CKEditorField, upload_success, upload_fail
 import os
 import psycopg2
 
 app = Flask(__name__)
 Bootstrap(app)
 ckeditor = CKEditor(app)
-
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['CKEDITOR_SERVE_LOCAL'] = True
+app.config['CKEDITOR_FILE_UPLOADER'] = 'upload'
+app.config['UPLOADED_PATH'] = os.path.join(basedir, 'uploads')
+app.config['CKEDITOR_HEIGHT'] = 250
 
 ## Connect to DB
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", 'sqlite:///timer.db')
@@ -30,6 +36,14 @@ login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
+
+
+## WTForms
+class TaskForm(FlaskForm):
+    name = StringField('Task name:')
+    info = CKEditorField('Task info')
+    hours = IntegerField('  Hours spent:')
+    submit = SubmitField()
 
 
 ## User table
@@ -56,7 +70,7 @@ class TaskList(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
 
-#db.create_all()
+db.create_all()
 
 
 @app.route("/")
@@ -95,11 +109,12 @@ def end(task_id):
 @app.route("/add", methods=["GET", "POST"])
 @login_required
 def add():
+    form = TaskForm()
     if request.method == "GET":
-        return render_template("add.html")
+        return render_template("add.html", form=form)
     else:
-        new_task_name = request.form["name"]
-        ckeditor_data = request.form.get('ckeditor')
+        new_task_name = form.name.data
+        ckeditor_data = form.info.data
         new_task = TaskList(name=new_task_name, info=ckeditor_data, user=current_user)
         db.session.add(new_task)
         db.session.commit()
@@ -110,25 +125,26 @@ def add():
 @app.route("/edit/<task_id>", methods=["GET", "POST"])
 @login_required
 def edit(task_id):
+    form = TaskForm()
     edit_task = TaskList.query.get(task_id)
     if request.method == "GET":
-        task_info = edit_task.info
-        return render_template("edit.html", task=edit_task, task_info=task_info)
+        form.info.data = edit_task.info
+        return render_template("edit.html", task=edit_task, form=form)
     else:
-        if request.form["name"] == "":
+        if form.name.data == "":
             pass
         else:
-            new_name = request.form["name"]
+            new_name = form.name.data
             edit_task.name = new_name
-        if request.form["hours"] == "":
+        if form.hours.data == "":
             pass
         else:
-            new_hours = request.form["hours"]
+            new_hours = form.hours.data
             edit_task.hours_spent = new_hours
-        if request.form["ckeditor"] == "":
+        if form.info.data == "":
             pass
         else:
-            edit_task.info = request.form["ckeditor"]
+            edit_task.info = form.info.data
     db.session.commit()
     tasks = current_user.tasks.all()
     return redirect(url_for('home', tasks=tasks, current_user=current_user))
@@ -150,6 +166,24 @@ def delete(task_id):
     db.session.commit()
     tasks = current_user.tasks.all()
     return redirect(url_for('home', tasks=tasks, current_user=current_user))
+
+
+## CKEditor handling
+@app.route('/files/<filename>')
+def uploaded_files(filename):
+    path = app.config['UPLOADED_PATH']
+    return send_from_directory(path, filename)
+
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    f = request.files.get('upload')
+    extension = f.filename.split('.')[-1].lower()
+    if extension not in ['jpg', 'gif', 'png', 'jpeg']:
+        return upload_fail(message='Images only!')
+    f.save(os.path.join(app.config['UPLOADED_PATH'], f.filename))
+    url = url_for('uploaded_files', filename=f.filename)
+    return upload_success(url, filename=f.filename)
 
 
 ## User handling functions
