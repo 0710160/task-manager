@@ -13,7 +13,7 @@ import psycopg2
 app = Flask(__name__)
 
 ## Connect to DB
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL2", 'sqlite:///timer.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", 'sqlite:///timer.db')
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "asdflkj")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
