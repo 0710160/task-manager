@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, url_for, redirect, flash, send_from_directory
-from flask_bootstrap import Bootstrap
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, SubmitField
@@ -14,7 +13,6 @@ import os
 import psycopg2
 
 app = Flask(__name__)
-Bootstrap(app)
 ckeditor = CKEditor(app)
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['CKEDITOR_SERVE_LOCAL'] = True
