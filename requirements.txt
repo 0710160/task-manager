@@ -1,5 +1,5 @@
 Flask~=2.0.2
-SQLAlchemy~=2.4.4
+SQLAlchemy~=1.4.27
 Werkzeug~=2.0
 psycopg2~=2.9.2
 WTForms~=3.0.0
