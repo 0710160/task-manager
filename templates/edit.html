@@ -11,12 +11,10 @@
           <form action="" method="POST">
               {{ form.name.label }}
               {{ form.name(size=50) }}
-              {{ form.name.hours}}
+              {{ form.hours.label }}
               {{ form.hours(size=50) }}
               {{ form.info }}<br>
             {{ form.submit }}
-            <!--button class="btn btn-dark btn-lg px-4 me-md-2" type="submit">Submit</button>
-            <a class="btn btn-dark btn-lg px-4 me-md-2" href="{{ url_for('home') }}">Home</a-->
           </form>
       </div>
     </div>
