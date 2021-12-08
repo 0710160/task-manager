@@ -134,11 +134,11 @@ def edit(task_id):
         else:
             new_name = form.name.data
             edit_task.name = new_name
-        #if form.hours.data == "":
-        #    pass
-        #else:
-        #    new_hours = form.hours.data
-        #    edit_task.hours_spent = new_hours
+        if form.hours.data == "":
+            pass
+        else:
+            new_hours = form.hours.data
+            edit_task.hours_spent = new_hours
         if form.info.data == "":
             pass
         else:
