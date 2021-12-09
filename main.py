@@ -40,7 +40,7 @@ def load_user(user_id):
 class TaskForm(FlaskForm):
     name = StringField('Task name:')
     info = CKEditorField('Task info')
-    hours = IntegerField('  Hours spent:')
+    hours = IntegerField('Hours spent:')
     submit = SubmitField()
 
 
@@ -134,11 +134,11 @@ def edit(task_id):
         else:
             new_name = form.name.data
             edit_task.name = new_name
-        if form.hours.data == "":
-            pass
-        else:
-            new_hours = form.hours.data
+        try:
+            new_hours = int(form.hours.data)
             edit_task.hours_spent = new_hours
+        except TypeError:
+            pass
         if form.info.data == "":
             pass
         else:
