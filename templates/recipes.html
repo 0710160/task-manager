@@ -3,20 +3,21 @@
 {% block title %}Recipes{% endblock title %}
 {% block content %}
 
+<div class="container-page">
 <div class="container-flex">
 
   <h1>All Recipes</h1>
-
 <input type="text" placeholder="Search..." id="myInput" onkeyup="myFunction()">
 
 <ul id="myUL">
   {% for i in recipes %}
-  <li><a href="/recipe/{{ i.id }}" data-keywords="{{ i.data_keywords }}">{{ i.title }}</a></li>
+      <li><a href="/recipe/{{ i.id }}" data-keywords="{{ i.data_keywords }}">{{ i.title }}</a></li>
   {% endfor %}
 </ul>
 
-  <a class="btn btn-dark" href="{{url_for('add_recipe') }}">Add Recipe</a>
+  <a class="btn" href="{{url_for('add_recipe') }}">Add Recipe</a>
 
+</div>
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>

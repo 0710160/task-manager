@@ -1,21 +1,51 @@
+:root {
+  --theme-bg: #E6D5B8;
+  --theme-text: #1B1A17;
+  --theme-accent: #F0A500;
+  --theme-other: #E45826;
+}
+
 h1, h2 {
   font-family: 'Lato', sans-serif;
+  color: var(--theme-text);
+}
+
+p, li, a, .nav-link {
+  color: var(--theme-text);
 }
 
 .flashes {
-  color: red;
+  color: var(--theme-accent);
 }
 
 /*---------------------------------------- NAVBAR ---------------------------------------*/
+.navbar {
+  background-color: var(--theme-accent);
+}
+
+/*---------------------------------------- GENERAL ---------------------------------------*/
+.container-page {
+  position: absolute;
+  width: 100%;
+  min-height: 100%;
+  z-index: -1;
+  background-color: var(--theme-bg);
+}
 
 .container-flex {
   margin: 3vh;
   max-width: 600px;
 }
 
+.btn {
+  background-color: var(--theme-other);
+  color: var(--theme-text);
+}
+
 /*----------------------------------------- RECIPES ----------------------------------------*/
 #myUL a {
   margin-left: 10px;
+  font-size: 1.2em;
 }
 
 input#title {
@@ -24,8 +54,13 @@ input#title {
 
 .edit-del {
   text-decoration: none;
-  color: var(--bs-gray-600);
+  color: var(--theme-other);
   margin-left: 5px;
+}
+
+.recipe_img {
+  max-width: 300px;
+  max-height: 100px;
 }
 
 /*---------------------------------------- TASK TABLE ---------------------------------------*/
@@ -35,7 +70,7 @@ input#title {
 
 th {
   font-size: 1.1em;
-  color: #334257;
+  color: var(--theme-accent);
   }
 
 .btn {

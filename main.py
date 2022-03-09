@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from time import time
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from flask_ckeditor import CKEditor, CKEditorField, upload_success, upload_fail
 import os
@@ -17,11 +18,15 @@ ckeditor = CKEditor(app)
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['CKEDITOR_SERVE_LOCAL'] = True
 app.config['CKEDITOR_FILE_UPLOADER'] = 'upload'
-## TODO: work out upload path for Heroku
 ## TODO: create PDF to text uploader
-## TODO: submit task edit redirects to home; needs to go to tasks
 app.config['UPLOADED_PATH'] = os.path.join(basedir, 'uploads')
 app.config['CKEDITOR_HEIGHT'] = 250
+
+## Define folder for image uploads
+app.config['UPLOAD_FOLDER'] = 'static/uploads/'
+## TODO: work out upload path for Heroku
+#UPLOAD_FOLDER = '/home/0710160/ggi/static/uploads/'
+ALLOWED_EXTENSIONS = set(['webp', 'png', 'jpg', 'jpeg', 'gif'])
 
 ## Connect to DB
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", 'sqlite:///personal.db')
@@ -90,6 +95,9 @@ class Recipes(db.Model):
 
 db.create_all()
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route("/")
 def home():
@@ -130,10 +138,33 @@ def add_recipe():
             new_recipe = Recipes(title=new_recipe_name,
                                  recipe_body=ckeditor_data,
                                  data_keywords=json.dumps(ingredients))
-            print(ingredients)
-            print(type(ingredients))
             db.session.add(new_recipe)
             db.session.commit()
+            return redirect(f"/recipe_image/{new_recipe.id}")
+
+
+@app.route("/recipe_image/<recipe_id>", methods=["GET", "POST"])
+@login_required
+def recipe_image(recipe_id):
+    this_recipe = Recipes.query.get(recipe_id)
+    if request.method == 'GET':
+        return render_template('recipe_image.html', recipe=this_recipe)
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select a file, browser submits empty part without filename
+        if file.filename == '':
+            flash('No file selected for uploading')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = f'recipe{this_recipe.id}'
+            this_recipe.image_url = filename
+            db.session.commit()
+            #print('upload_image filename: ' + os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return redirect(url_for('recipes'))
 
 
@@ -190,7 +221,7 @@ def add():
         db.session.add(new_task)
         db.session.commit()
         tasks = current_user.tasks.all()
-        return redirect(url_for('home', tasks=tasks, current_user=current_user))
+        return redirect(url_for('taskman', tasks=tasks, current_user=current_user))
 
 
 @app.route("/edit_task/<task_id>", methods=["GET", "POST"])
@@ -218,7 +249,7 @@ def edit(task_id):
             edit_task.info = form.info.data
     db.session.commit()
     tasks = current_user.tasks.all()
-    return redirect(url_for('home', tasks=tasks, current_user=current_user))
+    return redirect(url_for('taskman', tasks=tasks, current_user=current_user))
 
 
 @app.route("/complete_task/<task_id>")

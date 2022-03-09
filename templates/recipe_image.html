@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block nav_recipes %}active{% endblock nav_recipes %}
+{% block title %}Add Image Recipe{% endblock title %}
+{% block content %}
+
+<div class="container-fluid">
+<!-- Heading Image -->
+<p>
+	{% with messages = get_flashed_messages() %}
+	  {% if messages %}
+		<ul>
+		{% for message in messages %}
+		  <li>{{ message }}</li>
+		{% endfor %}
+		</ul>
+	  {% endif %}
+	{% endwith %}
+</p>
+
+<p>Upload image; fit size 260mm x 100mm, preferred file format .webp</p>
+<br>
+
+<form method="post" action="/recipe_image/{{ recipe.id }}" enctype="multipart/form-data">
+    <dl>
+		<p>
+			<input type="file" name="file" autocomplete="off" required>
+		</p>
+    </dl>
+    <p>
+		<input type="submit" value="Submit">
+	</p>
+</form>
+</div>
+
+{% endblock %}
