@@ -7,21 +7,53 @@
 
   <h1>All Recipes</h1>
 
-  <input type="text", placeholder="Search recipes", id="searchField", onkeyup="searchFunction()">
+<input type="text" placeholder="Search..." id="myInput" onkeyup="myFunction()">
 
-  <ul id="recipeUL">
+<ul id="myUL">
   {% for i in recipes %}
-    <li>
-      {% if current_user.is_authenticated %}
-      <span><a href="#"><i class="bi bi-pencil"></i></a>
-        <a href="/delete_recipe/{{ i.id }}"><i class="bi bi-x-square"></i></a></span>
-      {% endif %}
-      <a href="/recipe/{{ i.id }}" data-keywords="{{ i.data_keywords }}">{{ i.title }}</a> </li>
-    {% endfor %}
-  </ul>
+  <li><a href="/recipe/{{ i.id }}" data-keywords="{{ i.data_keywords }}">{{ i.title }}</a></li>
+  {% endfor %}
+</ul>
 
   <a class="btn btn-dark" href="{{url_for('add_recipe') }}">Add Recipe</a>
 
 </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<script>
+// Search functionality
+function myFunction() {
+    // Declare variables
+    var input = document.getElementById('myInput'),
+        filter = input.value,
+        ul = document.getElementById('myUL'),
+        lis = ul.getElementsByTagName('li'),
+        searchTerms = filter.match(/[a-z]+/gi),
+        re, index, li, a;
+
+    if (searchTerms) {
+        searchTerms = searchTerms.map(function(term) {
+            return '(?=.*' + term + ')';
+        });
+
+        re = new RegExp(searchTerms.join(''), 'i');
+    } else {
+        re = /./;
+    }
+
+    // Loop through all list items, and hide those who don't match the search query
+    for (index = 0; index < lis.length; index++) {
+        li = lis[index];
+        a = li.firstChild;
+
+        if (re.test(a.innerHTML + ' ' + a.getAttribute('data-keywords'))) {
+            li.style.display = '';
+        } else {
+            li.style.display = 'none';
+        }
+    }
+}
+</script>
 
 {% endblock content %}

@@ -14,12 +14,18 @@ h1, h2 {
 }
 
 /*----------------------------------------- RECIPES ----------------------------------------*/
-#recipeUL a {
+#myUL a {
   margin-left: 10px;
 }
 
 input#title {
   width: 88vw;
+}
+
+.edit-del {
+  text-decoration: none;
+  color: var(--bs-gray-600);
+  margin-left: 5px;
 }
 
 /*---------------------------------------- TASK TABLE ---------------------------------------*/

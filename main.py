@@ -98,7 +98,7 @@ def home():
 
 @app.route("/recipes")
 def recipes():
-    return render_template('recipes.html', recipes=Recipes.query.order_by(Recipes.date_added.asc()))
+    return render_template('recipes.html', recipes=Recipes.query.order_by(Recipes.id.desc()))
 
 
 @app.route("/recipe/<recipe_id>")

@@ -23,7 +23,6 @@
 </head>
 
 <body>
-<!-- Navbar -->
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
@@ -61,42 +60,9 @@
   </nav>
 
  <script src="https://cdn.ckeditor.com/4.10.0/standard/ckeditor.js"></script>
- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 
-<script>
-    function searchFunction() {
-  //declare variables
-  var input = document.getElementById('searchField'),
-    filter = input.value,
-    ul = document.getElementById('recipeUL'),
-    lis = ul.getElementsByTagName('li'),
-    searchTerms = filter.match(/[a-z]+/gi),
-    re, index, li, a;
 
-  if (searchTerms) {
-    searchTerms = searchTerms.map(function(term) {
-      return '(?=.*' + term + ')';
-    });
-
-    re = new RegExp(searchTerms.join(''), 'i');
-  } else {
-    re = /./;
-  }
-
-  //loop through all list items and hide those which don't match the search query
-  for (index = 0; index < lis.length; index++) {
-    li = lis[index];
-    a = li.firstChild;
-
-    if (re.test(a.innerHTML + ' ' + a.getAttribute('data-keywords'))) {
-      li.style.display = '';
-    } else {
-      li.style.display = 'none';
-    }
-    }
-  }
-</script>
 
 {% block content %}
 {% endblock content %}
