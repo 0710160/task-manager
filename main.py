@@ -1,20 +1,31 @@
-from flask import Flask, render_template, request, url_for, redirect, flash
+from flask import Flask, render_template, request, url_for, redirect, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+from flask_wtf import FlaskForm
+from wtforms import StringField, IntegerField, SubmitField
 from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
 from time import time
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.exceptions import HTTPException
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from flask_ckeditor import CKEditor, CKEditorField, upload_success, upload_fail
 import os
+import json
 import psycopg2
 
 app = Flask(__name__)
+ckeditor = CKEditor(app)
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['CKEDITOR_SERVE_LOCAL'] = True
+app.config['CKEDITOR_FILE_UPLOADER'] = 'upload'
+## TODO: work out upload path for Heroku
+## TODO: create PDF to text uploader
+## TODO: submit task edit redirects to home; needs to go to tasks
+app.config['UPLOADED_PATH'] = os.path.join(basedir, 'uploads')
+app.config['CKEDITOR_HEIGHT'] = 250
 
 ## Connect to DB
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", 'sqlite:///timer.db')
-app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "asdflkj")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", 'sqlite:///personal.db')
+app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "lah*(P98&*(g7Wgg1")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -26,6 +37,20 @@ login_manager.init_app(app)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
+
+
+## WTForms
+class TaskForm(FlaskForm):
+    name = StringField('Task name:')
+    info = CKEditorField('Task info')
+    hours = IntegerField('Hours spent:')
+    submit = SubmitField()
+
+
+class RecipeForm(FlaskForm):
+    title = StringField('Recipe title:')
+    directions = CKEditorField('Directions:')
+    submit = SubmitField()
 
 
 ## User table
@@ -42,6 +67,7 @@ class TaskList(db.Model):
     __tablename__ = 'tasklist'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(256))
+    info = db.Column(db.String)
     date_start = db.Column(db.String, default=datetime.today().strftime('%d-%m-%Y'))
     date_end = db.Column(db.String)
     hours_spent = db.Column(db.Float)
@@ -49,29 +75,85 @@ class TaskList(db.Model):
     active = db.Column(db.Boolean, default=False)
     completed = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    note = relationship("Notes", back_populates="task")
 
 
-## Notes table to hold to-dos and notes associated with each task
-class Notes(db.Model):
+## Recipe table
+class Recipes(db.Model):
+    __tablename__ = 'recipes'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    task_id = db.Column(db.Integer, db.ForeignKey("tasklist.id"))
-    task = relationship("TaskList", back_populates="note")
-    note = db.Column(db.String)
-    done = db.Column(db.Boolean, default=False)
+    title = db.Column(db.String(256), nullable=False)
+    data_keywords = db.Column(db.String)
+    recipe_body = db.Column(db.String)
+    date_added = db.Column(db.String, default=datetime.today().strftime('%d-%m-%Y'))
+    image_url = db.Column(db.String)
 
 
 db.create_all()
 
 
 @app.route("/")
-@login_required
 def home():
+    return render_template("index.html")
+
+
+@app.route("/recipes")
+def recipes():
+    return render_template('recipes.html', recipes=Recipes.query.order_by(Recipes.id.desc()))
+
+
+@app.route("/recipe/<recipe_id>")
+def recipe(recipe_id):
+    return render_template("recipe.html", recipe=Recipes.query.get(recipe_id))
+
+
+@app.route("/add_recipe", methods=["GET", "POST"])
+@login_required
+def add_recipe():
+    form = RecipeForm()
+    if request.method == "GET":
+        return render_template("add_recipe.html", form=form)
+    else:
+        new_recipe_name = form.title.data
+        ckeditor_data = form.directions.data
+        ingredients = []
+        hr_present = False
+        for i in ckeditor_data.splitlines():
+            if i == "<hr />":
+                hr_present = True
+            else:
+                if 'Ingredients' not in i:
+                    ingredients.append(i.replace("<br />", ""))
+        if not hr_present:
+            flash("Ensure a horizontal line is entered after the ingredients section.")
+            return render_template("add_recipe.html", form=form)
+        else:
+            new_recipe = Recipes(title=new_recipe_name,
+                                 recipe_body=ckeditor_data,
+                                 data_keywords=json.dumps(ingredients))
+            print(ingredients)
+            print(type(ingredients))
+            db.session.add(new_recipe)
+            db.session.commit()
+            return redirect(url_for('recipes'))
+
+
+@app.route("/delete_recipe/<recipe_id>")
+@login_required
+def delete_recipe(recipe_id):
+    delete_recipe = Recipes.query.get(recipe_id)
+    db.session.delete(delete_recipe)
+    db.session.commit()
+    return redirect(url_for('recipes'))
+
+
+@app.route("/task_man")
+@login_required
+def taskman():
     tasks = current_user.tasks.all()
-    return render_template("index.html", tasks=tasks, current_user=current_user)
+    return render_template("task_man.html", tasks=tasks, current_user=current_user)
 
 
-@app.route("/start/<task_id>")
+@app.route("/start_task/<task_id>")
 def start(task_id):
     # Starts timer
     task = TaskList.query.get(task_id)
@@ -81,8 +163,7 @@ def start(task_id):
     return redirect(request.referrer)
 
 
-
-@app.route("/end/<task_id>")
+@app.route("/end_task/<task_id>")
 def end(task_id):
     # Ends timer and adds hours to db
     task = TaskList.query.get(task_id)
@@ -96,59 +177,51 @@ def end(task_id):
     return redirect(request.referrer)
 
 
-
-@app.route("/add", methods=["GET", "POST"])
+@app.route("/add_task", methods=["GET", "POST"])
 @login_required
 def add():
+    form = TaskForm()
     if request.method == "GET":
-        return render_template("add.html")
+        return render_template("add_task.html", form=form)
     else:
-        new_task_name = request.form["name"]
-        new_task = TaskList(name=new_task_name, user=current_user)
+        new_task_name = form.name.data
+        ckeditor_data = form.info.data
+        new_task = TaskList(name=new_task_name, info=ckeditor_data, user=current_user)
         db.session.add(new_task)
-        # get hold of new task after adding it to db so assign task_id
-        get_new_task = db.session.query(TaskList).filter_by(name=new_task_name).first()
-        new_task_notes = request.form["note"]
-        if new_task_notes == "":
-            pass
-        else:
-            new_note = Notes(note=new_task_notes, task_id=get_new_task.id)
-            db.session.add(new_note)
         db.session.commit()
         tasks = current_user.tasks.all()
         return redirect(url_for('home', tasks=tasks, current_user=current_user))
 
 
-@app.route("/edit/<task_id>", methods=["GET", "POST"])
+@app.route("/edit_task/<task_id>", methods=["GET", "POST"])
 @login_required
 def edit(task_id):
+    form = TaskForm()
     edit_task = TaskList.query.get(task_id)
-    notes = db.session.query(Notes).filter_by(task_id=edit_task.id).all()
     if request.method == "GET":
-        return render_template("edit.html", task=edit_task, notes=notes)
+        form.info.data = edit_task.info
+        return render_template("edit_task.html", task=edit_task, form=form)
     else:
-        if request.form["name"] == "":
+        if form.name.data == "":
             pass
         else:
-            new_name = request.form["name"]
+            new_name = form.name.data
             edit_task.name = new_name
-        if request.form["hours"] == "":
-            pass
-        else:
-            new_hours = request.form["hours"]
+        try:
+            new_hours = int(form.hours.data)
             edit_task.hours_spent = new_hours
-        if request.form["notes"] == "":
+        except TypeError:
+            pass
+        if form.info.data == "":
             pass
         else:
-            note = request.form["notes"]
-            new_note = Notes(task_id=task_id, note=note)
-            db.session.add(new_note)
+            edit_task.info = form.info.data
     db.session.commit()
     tasks = current_user.tasks.all()
     return redirect(url_for('home', tasks=tasks, current_user=current_user))
 
 
-@app.route("/complete/<task_id>")
+@app.route("/complete_task/<task_id>")
 def complete(task_id):
     edit_task = TaskList.query.get(task_id)
     edit_task.completed = True
@@ -157,16 +230,7 @@ def complete(task_id):
     return redirect(request.referrer)
 
 
-
-@app.route("/note/<task_id>/<note_id>")
-def note(task_id, note_id):
-    edit_note = Notes.query.get(note_id)
-    edit_note.done = not edit_note.done
-    db.session.commit()
-    return redirect(request.referrer)
-
-
-@app.route("/delete/<task_id>")
+@app.route("/delete_task/<task_id>")
 def delete(task_id):
     delete_task = TaskList.query.get(task_id)
     db.session.delete(delete_task)
@@ -175,8 +239,26 @@ def delete(task_id):
     return redirect(url_for('home', tasks=tasks, current_user=current_user))
 
 
+## CKEditor handling
+@app.route('/files/<filename>')
+def uploaded_files(filename):
+    path = app.config['UPLOADED_PATH']
+    return send_from_directory(path, filename)
+
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    f = request.files.get('upload')
+    extension = f.filename.split('.')[-1].lower()
+    if extension not in ['jpg', 'gif', 'png', 'jpeg']:
+        return upload_fail(message='Images only!')
+    f.save(os.path.join(app.config['UPLOADED_PATH'], f.filename))
+    url = url_for('uploaded_files', filename=f.filename)
+    return upload_success(url, filename=f.filename)
+
+
 ## User handling functions
-@app.route("/register", methods=["GET", "POST"])
+@app.route("/fZfI@^0lXOfRv2Ks&RI(1Ov4", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
         return render_template('register.html')
