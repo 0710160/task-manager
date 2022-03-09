@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block nav_recipes %}active{% endblock nav_recipes %}
+{% block title %}{{ recipe.title }}{% endblock title %}
+{% block content %}
+
+<div class="container-flex">
+
+<h1>{{ recipe.title }}</h1>
+  <p>{{ recipe.recipe_body|safe }}</p>
+
+  <a class="btn btn-dark" href="{{url_for('recipes') }}">All Recipes</a>
+
+</div>
+
+{% endblock content %}

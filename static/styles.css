@@ -1,10 +1,21 @@
-/*---------------------------------------- HEADER ---------------------------------------*/
-.navs {
-  text-align: right;
+h1, h2 {
+  font-family: 'Lato', sans-serif;
 }
 
-.navs a {
-  color: white;
+/*---------------------------------------- NAVBAR ---------------------------------------*/
+
+.container-flex {
+  margin: 3vh;
+  max-width: 600px;
+}
+
+/*----------------------------------------- RECIPES ----------------------------------------*/
+#recipeUL a {
+  margin-left: 10px;
+}
+
+input#title {
+  width: 88vw;
 }
 
 /*---------------------------------------- TASK TABLE ---------------------------------------*/
@@ -42,13 +53,11 @@ ul {
 }
 
 
-/*---------------------------------------- MEDIA QUERIES ---------------------------------------*/
-@media only screen and (max-width:1300px) {
-  .task-man {
-    height: 8vh;
-  }
-  th {
-    font-size: 0.9em;
-  }
+/*--------------------------------- MEDIA QUERIES: DESKTOP --------------------------------*/
+@media screen and (min-width: 990px) {
+
+    input#title {
+      width: 60vw;
+    }
 
 }

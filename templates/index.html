@@ -1,66 +1,6 @@
 {% extends "base.html" %}
+{% block title %}Oh ye{% endblock title %}
 {% block content %}
 
-  <div class="task-list container col-xxl-8 px-4 py-5">
-  <h2>Active Tasks</h2>
-  <table class="table">
-  <thead>
-  <tr>
-    <th scope="col">Task name</th>
-    <th scope="col">Date started</th>
-    <th scope="col">Hours spent</th>
-    <th scope="col">Start/end</th>
-    <th scope="col">Complete</th>
-  </tr>
-  </thead>
-
-  <tbody>
-    {% for i in tasks %}
-    {% if i.completed == False %}
-    <tr>
-      <td><a href="/edit/{{ i.id }}"> {{ i.name }} </a></td>
-      <td> {{ i.date_start }}</td>
-      <td> {{ '%0.1f' | format(i.hours_spent|float) }}</td>
-      {% if i.active == False %}
-        <td><a class="btn btn-dark buttons" href="/start/{{ i.id }}">Start</a></td>
-      {% else %}
-        <td><a class="btn btn-primary buttons" href="/end/{{ i.id }}">End</a></td>
-      {% endif %}
-      <td><a class="btn btn-dark buttons" href="/complete/{{ i.id }}">Complete Task</a></td>
-    </tr>
-    {% endif %}
-      {% endfor %}
-  </tbody>
-  </table>
-
-    <a class="btn btn-dark buttons" href="{{ url_for('add') }}">Add new task</a>
-    <br><br>
-    <br><br>
-<h2>Completed Tasks</h2>
-    <table class="table">
-      <thead>
-      <tr>
-        <th scope="col">Task name</th>
-        <th scope="col">Date started</th>
-        <th scope="col">Date finished</th>
-        <th scope="col">Hours spent</th>
-      </tr>
-      </thead>
-
-      <tbody>
-      {% for i in tasks %}
-      {% if i.completed == True %}
-      <tr>
-        <td><a href="/edit/{{ i.id }}"> {{ i.name }} </a></td>
-        <td> {{ i.date_start }}</td>
-        <td> {{ i.date_end }}</td>
-        <td> {{ '%0.1f' | format(i.hours_spent|float) }}</td>
-      </tr>
-      {% endif %}
-      {% endfor %}
-      </tbody>
-    </table>
-
-  </div>
 
 {% endblock %}

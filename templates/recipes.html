@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block nav_recipes %}active{% endblock nav_recipes %}
+{% block title %}Recipes{% endblock title %}
+{% block content %}
+
+<div class="container-flex">
+
+  <h1>All Recipes</h1>
+
+  <input type="text", placeholder="Search recipes", id="searchField", onkeyup="searchFunction()">
+
+  <ul id="recipeUL">
+  {% for i in recipes %}
+    <li>
+      {% if current_user.is_authenticated %}
+      <span><a href="#"><i class="bi bi-pencil"></i></a><span></span><a href="#"><i class="bi bi-x-square"></i></a></span>
+      {% endif %}
+      <a href="/recipe/{{ i.id }}" data-keywords="{{ i.data_keywords }}">{{ i.title }}</a> </li>
+    {% endfor %}
+  </ul>
+
+  <a class="btn btn-dark" href="{{url_for('add_recipe') }}">Add Recipe</a>
+
+</div>
+
+{% endblock content %}

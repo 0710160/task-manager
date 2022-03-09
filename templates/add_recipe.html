@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Add New Recipe{% endblock title %}
+{% block nav_recipes %}active{% endblock nav_recipes %}
+{% block content %}
+
+<div class="edit-screen container col-xxl-8 px-4 py-5">
+  <h2>Add New Recipe</h2>
+    <p>Separate ingredients list from directions with a horizontal rule</p>
+    <br /><br />
+    <form action="" method="POST">
+        {{ form.title.label }}<br />
+        {{ form.title }}<br />
+        {{ form.directions }}<br />
+        {{ form.submit }}
+    </form>
+  </div>
+{{ ckeditor.load() }}
+{{ ckeditor.config(name="directions") }}
+
+
+{% endblock %}

@@ -1,25 +1,28 @@
 {% extends "base.html" %}
+{% block title %}Edit Task {{ task.id }}{% endblock title %}
+{% block nav_task_man %}active{% endblock nav_task_man %}
 {% block content %}
 
   <div class="edit-screen container col-xxl-8 px-4 py-5">
       <h1 class="display-5 fw-bold lh-1 mb-3">Task #{{ task.id }}: {{ task.name }}</h1>
+      <form action="" method="POST">
+          {{ form.name.label }}
+          {{ form.name(size=50) }}
+          {{ form.hours.label }}
+          {{ form.hours }}
     <div class="row flex-lg-row-reverse align-items-start g-5 py-5">
       <div class="col-10 col-sm-8 col-lg-6">
         <img src="https://picsum.photos/700/500" class="d-block mx-lg-auto img-fluid">
       </div>
       <div class="col-lg-6">
-          <form action="" method="POST">
-              {{ form.name.label }}
-              {{ form.name(size=50) }}
-              {{ form.hours.label }}
-              {{ form.hours(size=50) }}
               {{ form.info }}<br>
             {{ form.submit }}
-          </form>
       </div>
     </div>
+      </form>
   </div>
 {{ ckeditor.load() }}
 {{ ckeditor.config(name="info") }}
+
 
 {% endblock %}
