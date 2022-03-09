@@ -6,7 +6,17 @@
 <div class="edit-screen container col-xxl-8 px-4 py-5">
   <h2>Add New Recipe</h2>
     <p>Separate ingredients list from directions with a horizontal rule</p>
-    <br /><br />
+    <!--Flash message if </hr> hasn't been added-->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul class=flashes>
+            {% for message in messages %}
+            {{ message }}
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+    <br />
     <form action="" method="POST">
         {{ form.title.label }}<br />
         {{ form.title }}<br />

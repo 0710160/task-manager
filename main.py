@@ -19,6 +19,7 @@ app.config['CKEDITOR_SERVE_LOCAL'] = True
 app.config['CKEDITOR_FILE_UPLOADER'] = 'upload'
 ## TODO: work out upload path for Heroku
 ## TODO: create PDF to text uploader
+## TODO: submit task edit redirects to home; needs to go to tasks
 app.config['UPLOADED_PATH'] = os.path.join(basedir, 'uploads')
 app.config['CKEDITOR_HEIGHT'] = 250
 
@@ -80,7 +81,7 @@ class TaskList(db.Model):
 class Recipes(db.Model):
     __tablename__ = 'recipes'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    title = db.Column(db.String(256))
+    title = db.Column(db.String(256), nullable=False)
     data_keywords = db.Column(db.String)
     recipe_body = db.Column(db.String)
     date_added = db.Column(db.String, default=datetime.today().strftime('%d-%m-%Y'))
@@ -115,20 +116,34 @@ def add_recipe():
         new_recipe_name = form.title.data
         ckeditor_data = form.directions.data
         ingredients = []
+        hr_present = False
         for i in ckeditor_data.splitlines():
             if i == "<hr />":
-                break
+                hr_present = True
             else:
                 if 'Ingredients' not in i:
-                    ingredients.append(i.replace("<br />",""))
-        new_recipe = Recipes(title=new_recipe_name,
-                             recipe_body=ckeditor_data,
-                             data_keywords=json.dumps(ingredients))
-        print(ingredients)
-        print(type(ingredients))
-        db.session.add(new_recipe)
-        db.session.commit()
-        return redirect(url_for('recipes'))
+                    ingredients.append(i.replace("<br />", ""))
+        if not hr_present:
+            flash("Ensure a horizontal line is entered after the ingredients section.")
+            return render_template("add_recipe.html", form=form)
+        else:
+            new_recipe = Recipes(title=new_recipe_name,
+                                 recipe_body=ckeditor_data,
+                                 data_keywords=json.dumps(ingredients))
+            print(ingredients)
+            print(type(ingredients))
+            db.session.add(new_recipe)
+            db.session.commit()
+            return redirect(url_for('recipes'))
+
+
+@app.route("/delete_recipe/<recipe_id>")
+@login_required
+def delete_recipe(recipe_id):
+    delete_recipe = Recipes.query.get(recipe_id)
+    db.session.delete(delete_recipe)
+    db.session.commit()
+    return redirect(url_for('recipes'))
 
 
 @app.route("/task_man")

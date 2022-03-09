@@ -2,6 +2,10 @@ h1, h2 {
   font-family: 'Lato', sans-serif;
 }
 
+.flashes {
+  color: red;
+}
+
 /*---------------------------------------- NAVBAR ---------------------------------------*/
 
 .container-flex {

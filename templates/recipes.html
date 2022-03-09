@@ -13,7 +13,8 @@
   {% for i in recipes %}
     <li>
       {% if current_user.is_authenticated %}
-      <span><a href="#"><i class="bi bi-pencil"></i></a><span></span><a href="#"><i class="bi bi-x-square"></i></a></span>
+      <span><a href="#"><i class="bi bi-pencil"></i></a>
+        <a href="/delete_recipe/{{ i.id }}"><i class="bi bi-x-square"></i></a></span>
       {% endif %}
       <a href="/recipe/{{ i.id }}" data-keywords="{{ i.data_keywords }}">{{ i.title }}</a> </li>
     {% endfor %}
