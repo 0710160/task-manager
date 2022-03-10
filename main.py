@@ -124,14 +124,22 @@ def add_recipe():
         ckeditor_data = form.directions.data
         ingredients = [new_recipe_name]
         hr_present = False
+        strip_words = ["Ingredients", "INGREDIENTS", "Ingredients:", "INGREDIENTS:",
+                       "1", "2", "3", "4", "5", "6", "7", "8", "9", "0",
+                       "teaspoon", "Teaspoon", "tablespoon", "Tablespoon",
+                       "teaspoons", "Teaspoons", "tablespoons", "Tablespoons",
+                       "cup", "Cup", "cups", "Cups", "water", "garnish",
+                       "large", "small", "medium", "handful", "optional",
+                       "(", ")", "/", "lengthwise", "juiced", "overnight",
+                       "sliced", "chopped", "dice", "grated", "bruised", "rinsed", "melted", "crushed"]
         for recipe_line in ckeditor_data.splitlines():
-            if "DIRECTION" in recipe_line.upper():
+            stripped_line = recipe_line.replace("<br />", "").replace("&nbsp;", "").replace("<p>", "").replace("</p", "")
+            if "DIRECTION" in stripped_line.upper():
                 hr_present = True
                 break
             else:
-                if 'Ingredients' not in recipe_line:
-                    strip_digits = ''.join([i for i in recipe_line if not i.isdigit()])
-                    ingredients.append(strip_digits.replace("<br />", ""))
+                more_stripped_line = ''.join([i for i in stripped_line if i not in strip_words])
+                ingredients.append(more_stripped_line)
         if not hr_present:
             flash("Ensure the word 'Directions' is used after the ingredients section.")
             return render_template("add_recipe.html", form=form)
