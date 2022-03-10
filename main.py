@@ -90,7 +90,6 @@ class Recipes(db.Model):
     recipe_body = db.Column(db.String)
     date_added = db.Column(db.String, default=datetime.today().strftime('%d-%m-%Y'))
     image_url = db.Column(db.String)
-    tags = db.Column(db.String)
 
 
 db.create_all()
