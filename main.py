@@ -6,7 +6,6 @@ from sqlalchemy.orm import relationship
 from time import time
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from flask_ckeditor import CKEditor, CKEditorField, upload_success, upload_fail
 import os
@@ -123,7 +122,7 @@ def add_recipe():
     else:
         new_recipe_name = form.title.data
         ckeditor_data = form.directions.data
-        ingredients = []
+        ingredients = [new_recipe_name]
         hr_present = False
         for i in ckeditor_data.splitlines():
             if i == "<hr />":
