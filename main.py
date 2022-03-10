@@ -124,14 +124,16 @@ def add_recipe():
         ckeditor_data = form.directions.data
         ingredients = [new_recipe_name]
         hr_present = False
-        for i in ckeditor_data.splitlines():
-            if i == "<hr />":
+        for recipe_line in ckeditor_data.splitlines():
+            if "DIRECTION" in recipe_line.upper():
                 hr_present = True
+                break
             else:
-                if 'Ingredients' not in i:
-                    ingredients.append(i.replace("<br />", ""))
+                if 'Ingredients' not in recipe_line:
+                    strip_digits = ''.join([i for i in recipe_line if not i.isdigit()])
+                    ingredients.append(strip_digits.replace("<br />", ""))
         if not hr_present:
-            flash("Ensure a horizontal line is entered after the ingredients section.")
+            flash("Ensure the word 'Directions' is used after the ingredients section.")
             return render_template("add_recipe.html", form=form)
         else:
             new_recipe = Recipes(title=new_recipe_name,
