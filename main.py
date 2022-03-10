@@ -90,6 +90,7 @@ class Recipes(db.Model):
     recipe_body = db.Column(db.String)
     date_added = db.Column(db.String, default=datetime.today().strftime('%d-%m-%Y'))
     image_url = db.Column(db.String)
+    tags = db.Column(db.String)
 
 
 db.create_all()
@@ -195,9 +196,9 @@ def edit_recipe(recipe_id):
         if form.directions.data == "":
             pass
         else:
-            edit_recipe.info = form.directions.data
+            edit_recipe.recipe_body = form.directions.data
     db.session.commit()
-    return redirect(url_for('recipes'))
+    return redirect(f"/recipe/{edit_recipe.id}")
 
 
 @app.route("/delete_recipe/<recipe_id>")
