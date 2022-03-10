@@ -177,6 +177,29 @@ def recipe_image(recipe_id):
             return redirect(url_for('recipes'))
 
 
+@app.route("/edit_recipe/<recipe_id>", methods=["GET", "POST"])
+@login_required
+def edit_recipe(recipe_id):
+    form = RecipeForm()
+    edit_recipe = Recipes.query.get(recipe_id)
+    if request.method == "GET":
+        form.title.data = edit_recipe.title
+        form.directions.data = edit_recipe.recipe_body
+        return render_template("edit_recipe.html", recipe=edit_recipe, form=form)
+    else:
+        if form.title.data == "":
+            pass
+        else:
+            new_name = form.title.data
+            edit_recipe.title = new_name
+        if form.directions.data == "":
+            pass
+        else:
+            edit_recipe.info = form.directions.data
+    db.session.commit()
+    return redirect(url_for('recipes'))
+
+
 @app.route("/delete_recipe/<recipe_id>")
 @login_required
 def delete_recipe(recipe_id):

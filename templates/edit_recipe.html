@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Edit Recipe{% endblock title %}
+{% block nav_recipes %}active{% endblock nav_recipes %}
+{% block content %}
+
+<div class="edit-screen container col-xxl-8 px-4 py-5">
+  <h2>Edit Recipe</h2>
+    <p>Ingredients section must be separated from the recipe with the word 'Directions'</p>
+    <!--Flash message if <hr /> hasn't been added-->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul class=flashes>
+            {% for message in messages %}
+            {{ message }}
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+    <br />
+    <form action="" method="POST">
+        {{ form.title.label }}<br />
+        {{ form.title }}<br />
+        {{ form.directions }}<br />
+        {{ form.submit }}
+    </form>
+  </div>
+{{ ckeditor.load() }}
+{{ ckeditor.config(name="directions") }}
+
+
+{% endblock %}

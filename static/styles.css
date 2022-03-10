@@ -38,6 +38,7 @@ p, li, a, .nav-link {
 }
 
 .btn {
+  border: none;
   background-color: var(--theme-other);
   color: var(--theme-text);
 }

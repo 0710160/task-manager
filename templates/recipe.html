@@ -8,7 +8,7 @@
 
 <h1>{{ recipe.title }}</h1>
   {% if current_user.is_authenticated %}
-  <span><a href="#" class="edit-del">Edit <i class="bi bi-pencil"></i></a>
+  <span><a href="/edit_recipe/{{ recipe.id }}" class="edit-del">Edit <i class="bi bi-pencil"></i></a>
     <a href="/delete_recipe/{{ recipe.id }}" class="edit-del">Delete <i class="bi bi-x-square"></i></a></span>
   {% endif %}
 
@@ -17,7 +17,7 @@
   {% endif %}
 
   <p>{{ recipe.recipe_body|safe }}</p>
-  <a class="btn" href="{{url_for('recipes') }}">All Recipes</a>
+  <a class="btn" href="{{url_for('recipes') }}">Back to Recipes</a>
 
 </div>
 </div>
