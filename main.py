@@ -10,21 +10,20 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, cur
 from flask_ckeditor import CKEditor, CKEditorField, upload_success, upload_fail
 import os
 import json
-import psycopg2
+
 
 app = Flask(__name__)
 ckeditor = CKEditor(app)
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['CKEDITOR_SERVE_LOCAL'] = True
 app.config['CKEDITOR_FILE_UPLOADER'] = 'upload'
-## TODO: work out upload path for Heroku
 ## TODO: create PDF to text uploader
 ## TODO: submit task edit redirects to home; needs to go to tasks
-app.config['UPLOADED_PATH'] = os.path.join(basedir, 'uploads')
+app.config['UPLOADED_PATH'] = '/home/0710160/recipes/static/uploads'
 app.config['CKEDITOR_HEIGHT'] = 250
 
 ## Connect to DB
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", 'sqlite:///personal.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///recipes.sqlite3'
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "lah*(P98&*(g7Wgg1")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -93,13 +92,12 @@ db.create_all()
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template('base.html')
 
 
 @app.route("/recipes")
 def recipes():
     return render_template('recipes.html', recipes=Recipes.query.order_by(Recipes.id.desc()))
-
 
 @app.route("/recipe/<recipe_id>")
 def recipe(recipe_id):
@@ -118,11 +116,12 @@ def add_recipe():
         ingredients = []
         hr_present = False
         for i in ckeditor_data.splitlines():
-            if i == "<hr />":
-                hr_present = True
+            i = i.strip("'\t'")
+            if i != "<hr />":
+                ingredients.append(i.replace("<br />", ""))
             else:
-                if 'Ingredients' not in i:
-                    ingredients.append(i.replace("<br />", ""))
+                hr_present = True
+                break
         if not hr_present:
             flash("Ensure a horizontal line is entered after the ingredients section.")
             return render_template("add_recipe.html", form=form)
@@ -130,8 +129,6 @@ def add_recipe():
             new_recipe = Recipes(title=new_recipe_name,
                                  recipe_body=ckeditor_data,
                                  data_keywords=json.dumps(ingredients))
-            print(ingredients)
-            print(type(ingredients))
             db.session.add(new_recipe)
             db.session.commit()
             return redirect(url_for('recipes'))
@@ -190,7 +187,7 @@ def add():
         db.session.add(new_task)
         db.session.commit()
         tasks = current_user.tasks.all()
-        return redirect(url_for('home', tasks=tasks, current_user=current_user))
+        return redirect(url_for('task_man', tasks=tasks, current_user=current_user))
 
 
 @app.route("/edit_task/<task_id>", methods=["GET", "POST"])
@@ -218,7 +215,7 @@ def edit(task_id):
             edit_task.info = form.info.data
     db.session.commit()
     tasks = current_user.tasks.all()
-    return redirect(url_for('home', tasks=tasks, current_user=current_user))
+    return redirect(url_for('task_man', tasks=tasks, current_user=current_user))
 
 
 @app.route("/complete_task/<task_id>")
@@ -236,7 +233,7 @@ def delete(task_id):
     db.session.delete(delete_task)
     db.session.commit()
     tasks = current_user.tasks.all()
-    return redirect(url_for('home', tasks=tasks, current_user=current_user))
+    return redirect(url_for('task_man', tasks=tasks, current_user=current_user))
 
 
 ## CKEditor handling
@@ -320,3 +317,4 @@ def special_exception_handler(error):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
