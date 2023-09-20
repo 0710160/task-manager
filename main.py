@@ -12,7 +12,8 @@ import os
 import json
 
 
-app = Flask(__name__)
+#app = Flask(__name__)
+app = Flask(__name__, static_folder="frontend/dist/static", template_folder="frontend/dist")
 ckeditor = CKEditor(app)
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['CKEDITOR_SERVE_LOCAL'] = True
@@ -92,7 +93,7 @@ db.create_all()
 
 @app.route("/")
 def home():
-    return render_template('base.html')
+    return render_template('index.html')
 
 
 @app.route("/recipes")
@@ -145,7 +146,7 @@ def delete_recipe(recipe_id):
 
 @app.route("/task_man")
 @login_required
-def taskman():
+def task_man():
     tasks = current_user.tasks.all()
     return render_template("task_man.html", tasks=tasks, current_user=current_user)
 
@@ -317,4 +318,3 @@ def special_exception_handler(error):
 
 if __name__ == "__main__":
     app.run(debug=True)
-
